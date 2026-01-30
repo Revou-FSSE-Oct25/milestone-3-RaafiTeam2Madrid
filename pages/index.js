@@ -1,21 +1,56 @@
-import ProductCard from "../components/ProductCard";
+import Link from "next/link";
 
 export default function Home({ products }) {
-  if (!products.length) {
-    return (
-      <p className="text-center text-gray-500 mt-10 text-lg font-medium">
-        No products available
-      </p>
-    );
-  }
-
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-6 text-center">🛍️ Product Listing</h1>
+    <div style={{ padding: 24 }}>
+      <h1 style={{ marginBottom: 24 }}>Product Listing</h1>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))",
+          gap: 24,
+        }}
+      >
         {products.map((p) => (
-          <ProductCard key={p.id} product={p} />
+          <div
+            key={p.id}
+            style={{
+              border: "1px solid #e5e5e5",
+              borderRadius: 12,
+              padding: 16,
+              background: "#fff",
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "space-between",
+            }}
+          >
+            <img
+              src={p.image}
+              alt={p.title}
+              style={{
+                height: 160,
+                objectFit: "contain",
+                marginBottom: 12,
+              }}
+            />
+
+            <div>
+              <Link href={`/product/${p.id}`}>
+                <h3
+                  style={{
+                    fontSize: 16,
+                    marginBottom: 8,
+                    cursor: "pointer",
+                  }}
+                >
+                  {p.title}
+                </h3>
+              </Link>
+
+              <p style={{ fontWeight: "bold" }}>${p.price}</p>
+            </div>
+          </div>
         ))}
       </div>
     </div>
@@ -23,15 +58,16 @@ export default function Home({ products }) {
 }
 
 export async function getStaticProps() {
-  try {
-    const res = await fetch("https://fakestoreapi.com/products");
-    const products = await res.json();
+  const res = await fetch("https://fakestoreapi.com/products");
 
-    return {
-      props: { products },
-      revalidate: 60,
-    };
-  } catch {
-    return { props: { products: [] } };
+  if (!res.ok) {
+    throw new Error("Failed to fetch products");
   }
+
+  const products = await res.json();
+
+  return {
+    props: { products },
+    revalidate: 60,
+  };
 }
